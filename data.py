@@ -29,6 +29,17 @@ default_transform = transforms.Compose(
         transforms.RandomVerticalFlip(),
         transforms.RandomRotation(degrees=15),
         transforms.ToTensor(),
+        transforms.Normalize(mean=mean_tr, std=std_tr),
+    ]
+)
+
+canny_transform = transforms.Compose(
+    [
+        transforms.RandomResizedCrop(224, scale=(0.3, 1)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomRotation(degrees=15),
+        transforms.ToTensor(),
     ]
 )
 
