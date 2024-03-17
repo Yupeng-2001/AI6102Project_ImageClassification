@@ -37,8 +37,8 @@ class ResNetClassifier(nn.Module):
         self.resnet = models.resnet50(pretrained=True)
 
         # Replace the final fully connected layer with a new one
-        num_ftrs = self.resnet.fc.in_features
-        self.resnet.fc = nn.Linear(num_ftrs, num_classes)
+        num_ftrs = self.resnet.fc.out_features
+        self.fc = nn.Linear(num_ftrs, num_classes)
 
     def forward(self, x):
         x = self.resnet(x)
