@@ -19,8 +19,6 @@ class ResNetClassifier(nn.Module):
         x = self.fc(x)
         return x
     
-
-
 class ViTClassifier(nn.Module):
     def __init__(self, num_classes):
         super(ViTClassifier, self).__init__()
@@ -32,5 +30,4 @@ class ViTClassifier(nn.Module):
         x = self.backbone(x)
         x = self.fc(x)
         return x
-    
 

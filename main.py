@@ -2,7 +2,7 @@ import argparse
 
 from data import get_dataloader, default_transform, canny_transform
 from model import ResNetClassifier, ViTClassifier
-from utils import reset_seeds, save_model, evaluate_model
+from utils import reset_seeds, save_model
 
 from train import train_model
 
@@ -22,7 +22,9 @@ if __name__=="__main__":
   parser.add_argument("--batch_size", type=int, default=64)
   parser.add_argument("--epochs", type=int, default=50)
   parser.add_argument("--lr", type=float, default=0.001)
-  parser.add_argument("--momentum", type=float, default=0.9)
+  parser.add_argument("--beta1", type=float, default=0.9, help = "decay rate for the first moment estimate")
+  parser.add_argument("--beta2", type=float, default=0.999, help="exponential decay rate for Adam")
+  parser.add_argument("--momentum", type=float, default=0.9, help="momentum for SGD")
   parser.add_argument("--optimizer_type", type=str, choices=['SGD', 'Adam'], default='Adam')
   parser.add_argument("--seed", type=int, default=42)
   parser.add_argument("--transform", type=str, choices=['default_transform', 'canny_transform'], default='default_transform')
@@ -40,6 +42,8 @@ if __name__=="__main__":
 
   optimizer_type = args.optimizer_type
   lr=args.lr
+  beta1 = args.beta1
+  beta2 = args.beta2
   momentum = args.momentum
   
   model_type = args.model
@@ -78,9 +82,9 @@ if __name__=="__main__":
 
   optimizer = None
   if optimizer_type == "Adam":
-    optimizer = optim.Adam(model.parameters(), lr=lr, momentum=0.9)
+    optimizer = optim.Adam(model.parameters(), lr=lr, betas=(beta1, beta2))
   else:
-    optimizer = optim.SGD(model.parameters(), lr=lr)
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
 
   """##training##"""
   trianing_result, best_model_params = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=epochs, device='cuda')
