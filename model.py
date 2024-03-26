@@ -22,12 +22,11 @@ class ResNetClassifier(nn.Module):
 class ViTClassifier(nn.Module):
     def __init__(self, num_classes):
         super(ViTClassifier, self).__init__()
-        self.backbone = vision_transformer.ViT('B_16_imagenet1k', pretrained=True)
-        num_ftrs = self.backbone.head.in_features
+        self.backbone = vision_transformer.vit_b_16(weights='IMAGENET1K_V1')#vision_transformer.ViT('B_16_imagenet1k', pretrained=True)
+        num_ftrs = self.backbone.heads.head.out_features
         self.fc = nn.Linear(num_ftrs, num_classes)
 
     def forward(self, x):
         x = self.backbone(x)
         x = self.fc(x)
         return x
-
