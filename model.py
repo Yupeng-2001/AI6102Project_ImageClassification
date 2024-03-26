@@ -1,5 +1,7 @@
 import torchvision.models as models
 import torch.nn as nn
+import torch.nn.functional as F
+from torchvision.models import vision_transformer
 
 class ResNetClassifier(nn.Module):
     def __init__(self, num_classes):
@@ -14,4 +16,21 @@ class ResNetClassifier(nn.Module):
 
     def forward(self, x):
         x = self.resnet(x)
+        x = self.fc(x)
         return x
+    
+
+
+class ViTClassifier(nn.Module):
+    def __init__(self, num_classes):
+        super(ViTClassifier, self).__init__()
+        self.backbone = vision_transformer.ViT('B_16_imagenet1k', pretrained=True)
+        num_ftrs = self.backbone.head.in_features
+        self.fc = nn.Linear(num_ftrs, num_classes)
+
+    def forward(self, x):
+        x = self.backbone(x)
+        x = self.fc(x)
+        return x
+    
+

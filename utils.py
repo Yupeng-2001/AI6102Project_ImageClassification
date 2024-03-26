@@ -37,7 +37,6 @@ def save_model(model_save_path, model_type, trianing_result, best_model_params, 
   model_file_path = os.path.join(model_save_path, model_filename)
   torch.save(best_model_params, model_file_path)
 
-  
   json_content = {}
   json_content["classes"] = classes
   json_content["trianing_process"] = trianing_result

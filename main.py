@@ -1,7 +1,7 @@
 import argparse
 
 from data import get_dataloader, default_transform, canny_transform
-from model import ResNetClassifier
+from model import ResNetClassifier, ViTClassifier
 from utils import reset_seeds, save_model, evaluate_model
 
 from train import train_model
@@ -22,6 +22,8 @@ if __name__=="__main__":
   parser.add_argument("--batch_size", type=int, default=64)
   parser.add_argument("--epochs", type=int, default=50)
   parser.add_argument("--lr", type=float, default=0.001)
+  parser.add_argument("--momentum", type=float, default=0.9)
+  parser.add_argument("--optimizer_type", type=str, choices=['SGD', 'Adam'], default='Adam')
   parser.add_argument("--seed", type=int, default=42)
   parser.add_argument("--transform", type=str, choices=['default_transform', 'canny_transform'], default='default_transform')
 
@@ -35,20 +37,26 @@ if __name__=="__main__":
 
   batch_size = args.batch_size
   epochs = args.epochs
+
+  optimizer_type = args.optimizer_type
+  lr=args.lr
+  momentum = args.momentum
+  
   model_type = args.model
   model_save_path = args.model_save_path
-  num_classes = 121
   train_data_path = args.train_data_path
-  lr=args.lr
+  
   seed = args.seed
-
-  transform = default_transform
-  if(args.transform == 'canny_transform'):
-    transform = canny_transform
+  num_classes = 121
      
   reset_seeds(seed)
 
+
   """## data loading ##"""
+  transform = default_transform
+  if(args.transform == 'canny_transform'):
+    transform = canny_transform
+
   dataloader = get_dataloader(train_data_path, batch_size, True, transform)
   validation_size = int(0.2 * len(dataloader.dataset))
   train_dataset, val_dataset = random_split(dataloader.dataset, [len(dataloader.dataset) - validation_size, validation_size])
@@ -57,11 +65,22 @@ if __name__=="__main__":
   train_loader = DataLoader(train_dataset, batch_size=dataloader.batch_size, shuffle=True, num_workers=dataloader.num_workers)
   val_loader = DataLoader(val_dataset, batch_size=dataloader.batch_size, shuffle=False, num_workers=dataloader.num_workers)
 
-
+  """##models, loss and optimizer set up"""
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  model = ResNetClassifier(num_classes=num_classes)
+  
+  model = None
+  if model_type=="resnet50":
+    model = ResNetClassifier(num_classes=num_classes)
+  else:
+    model = ViTClassifier(num_classes=num_classes)
+
   criterion = nn.CrossEntropyLoss()
-  optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+  optimizer = None
+  if optimizer_type == "Adam":
+    optimizer = optim.Adam(model.parameters(), lr=lr, momentum=0.9)
+  else:
+    optimizer = optim.SGD(model.parameters(), lr=lr)
 
   """##training##"""
   trianing_result, best_model_params = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=epochs, device='cuda')
