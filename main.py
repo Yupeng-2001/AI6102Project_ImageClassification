@@ -3,7 +3,6 @@ import argparse
 from data import get_dataloader, default_transform, canny_transform
 from model import ResNetClassifier, ViTClassifier
 from utils import reset_seeds, save_model
-
 from train import train_model
 
 import torch
@@ -13,6 +12,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data import Subset, random_split
 from torch.utils.data import DataLoader
+import torch.optim.lr_scheduler as lr_scheduler
 
 if __name__=="__main__":
 
@@ -26,6 +26,7 @@ if __name__=="__main__":
   parser.add_argument("--beta2", type=float, default=0.999, help="exponential decay rate for Adam")
   parser.add_argument("--momentum", type=float, default=0.1, help="momentum for SGD")
   parser.add_argument("--optimizer_type", type=str, choices=['SGD', 'Adam'], default='Adam')
+  parser.add_argument("--scheduler_type", type=str, choices=['cos_annealing', 'none'], default='cos_annealing')
   parser.add_argument("--seed", type=int, default=42)
   parser.add_argument("--transform", type=str, choices=['default_transform', 'canny_transform'], default='default_transform')
 
@@ -45,7 +46,9 @@ if __name__=="__main__":
   beta1 = args.beta1
   beta2 = args.beta2
   momentum = args.momentum
-  
+  scheduler_type =  args.scheduler_type
+
+
   model_type = args.model
   model_save_path = args.model_save_path
   train_data_path = args.train_data_path
@@ -80,12 +83,17 @@ if __name__=="__main__":
 
   criterion = nn.CrossEntropyLoss()
 
+
   optimizer = None
   if optimizer_type == "Adam":
     optimizer = optim.Adam(model.parameters(), lr=lr, betas=(beta1, beta2))
   else:
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
 
+  scheduler = None
+  if scheduler_type == "cos_annealing":
+    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+
   """##training##"""
-  trianing_result, best_model_params = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=epochs, device='cuda')
+  trianing_result, best_model_params = train_model(model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs=epochs, device='cuda')
   save_model(model_save_path, model_type, trianing_result, best_model_params, dataloader.dataset.classes)

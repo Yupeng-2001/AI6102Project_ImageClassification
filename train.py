@@ -20,7 +20,7 @@ import os
 import pdb
 
 
-def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=10, device='cuda'):
+def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler=None, num_epochs=10, device='cuda'):
   model.to(device)
   trianing_result = []
   best_model_params = copy.deepcopy(model.state_dict())
@@ -67,6 +67,10 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
     if val_loss < best_valid_loss:
       best_valid_loss = val_loss
       best_model_params = copy.deepcopy(model.state_dict())
+
+    #update scheduler if not None
+    if(scheduler):
+       scheduler.step()
 
   return trianing_result, best_model_params
 
