@@ -19,7 +19,6 @@ import random
 import os
 import pdb
 
-
 def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler=None, num_epochs=10, device='cuda'):
   model.to(device)
   trianing_result = []
@@ -47,13 +46,14 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler
       total += labels.size(0)
       correct += (predicted == labels).sum().item()
 
+    #update scheduler if not None
+    if(scheduler):
+       scheduler.step()
+
 
     #calculate loss and accuracy
     train_loss = running_loss / len(train_loader.dataset)
     train_acc = correct / total
-    print(f"Epoch : {epoch}")
-    print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
-
     val_loss, val_acc = evaluate_model(model, val_loader, criterion, device)
 
     epoch_result = {}
@@ -68,11 +68,12 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, scheduler
       best_valid_loss = val_loss
       best_model_params = copy.deepcopy(model.state_dict())
 
-    #update scheduler if not None
-    if(scheduler):
-       scheduler.step()
 
-  return trianing_result, best_model_params
+    print(f"Epoch : {epoch}")
+    print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
+
+
+  return trianing_result, (best_valid_loss , best_model_params)
 
 
 def evaluate_model(model, val_loader, criterion, device='cuda'):

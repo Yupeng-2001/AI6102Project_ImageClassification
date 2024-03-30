@@ -31,6 +31,7 @@ if __name__=="__main__":
   parser.add_argument("--transform", type=str, choices=['default_transform', 'canny_transform'], default='default_transform')
 
   parser.add_argument("--model", type=str, choices=['resnet50', 'ViT'], default='resnet50', help="not implemented")
+  parser.add_argument("--freeze_backbone", type=str, choices=['y', 'n'], default='n', help="whether to freeze the backbone")
   parser.add_argument("--train_data_path", type=str, help="Path to load data")
   parser.add_argument("--model_save_path", type=str, help="Path to save the model's weight")
   
@@ -47,7 +48,6 @@ if __name__=="__main__":
   beta2 = args.beta2
   momentum = args.momentum
   scheduler_type =  args.scheduler_type
-
 
   model_type = args.model
   model_save_path = args.model_save_path
@@ -83,7 +83,6 @@ if __name__=="__main__":
 
   criterion = nn.CrossEntropyLoss()
 
-
   optimizer = None
   if optimizer_type == "Adam":
     optimizer = optim.Adam(model.parameters(), lr=lr, betas=(beta1, beta2))
@@ -95,5 +94,5 @@ if __name__=="__main__":
     scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
 
   """##training##"""
-  trianing_result, best_model_params = train_model(model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs=epochs, device='cuda')
+  trianing_result, (best_valid_loss , best_model_params) = train_model(model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs=epochs, device=device)
   save_model(model_save_path, model_type, trianing_result, best_model_params, dataloader.dataset.classes)

@@ -28,15 +28,18 @@ def reset_seeds(seed=42):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-def save_model(model_save_path, model_type, trianing_result, best_model_params, classes):
+def save_model(model_save_path, model_type, trianing_result, best_val_loss, best_model_params, classes):
   current_time = datetime.datetime.now()
   time_string = current_time.strftime("%Y-%m-%d_%H-%M")
 
-  model_filename = "_".join([model_type, time_string]) + ".pth"
+  #generate model weight's file name and save
+  model_filename = "_".join([model_type, time_string, "valLoss:"+str(best_val_loss)[:8] ]) + ".pth"
 
   model_file_path = os.path.join(model_save_path, model_filename)
   torch.save(best_model_params, model_file_path)
 
+  #save the result of the train process
+  #as well as classes that keeps track of class index mapping
   json_content = {}
   json_content["classes"] = classes
   json_content["trianing_process"] = trianing_result
