@@ -50,6 +50,10 @@ if __name__=="__main__":
   scheduler_type =  args.scheduler_type
 
   model_type = args.model
+  if args.freeze_backbone =='y':
+    freeze_backbone = True
+  else:
+    freeze_backbone = False
   model_save_path = args.model_save_path
   train_data_path = args.train_data_path
   
@@ -77,9 +81,9 @@ if __name__=="__main__":
   
   model = None
   if model_type=="resnet50":
-    model = ResNetClassifier(num_classes=num_classes)
+    model = ResNetClassifier(num_classes=num_classes, freeze_backbone=freeze_backbone)
   else:
-    model = ViTClassifier(num_classes=num_classes)
+    model = ViTClassifier(num_classes=num_classes, freeze_backbone=freeze_backbone)
 
   criterion = nn.CrossEntropyLoss()
 
@@ -95,4 +99,4 @@ if __name__=="__main__":
 
   """##training##"""
   trianing_result, (best_valid_loss , best_model_params) = train_model(model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs=epochs, device=device)
-  save_model(model_save_path, model_type, trianing_result, best_model_params, dataloader.dataset.classes)
+  save_model(model_save_path, model_type, trianing_result, best_valid_loss, best_model_params, dataloader.dataset.classes)
