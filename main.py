@@ -62,7 +62,6 @@ if __name__=="__main__":
      
   reset_seeds(seed)
 
-
   """## data loading ##"""
   transform = default_transform
   if(args.transform == 'canny_transform'):
@@ -99,4 +98,5 @@ if __name__=="__main__":
 
   """##training##"""
   trianing_result, (best_valid_loss , best_model_params) = train_model(model, train_loader, val_loader, criterion, optimizer, scheduler, num_epochs=epochs, device=device)
-  save_model(model_save_path, model_type, trianing_result, best_valid_loss, best_model_params, dataloader.dataset.classes)
+  model.load_state_dict(best_model_params)
+  save_model(model_save_path, model_type, trianing_result, best_valid_loss, model, dataloader.dataset.classes)
