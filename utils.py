@@ -1,10 +1,10 @@
-
 import random
 import numpy as np
 import torch
 import datetime
 import os
 import json
+
 
 def reset_seeds(seed=42):
     """
@@ -28,24 +28,29 @@ def reset_seeds(seed=42):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-def save_model(model_save_path, model_type, trianing_result, best_val_loss, model, classes):
-  current_time = datetime.datetime.now()
-  time_string = current_time.strftime("%Y-%m-%d_%H-%M")
 
-  #generate model weight's file name and save
-  model_filename = "_".join([model_type, time_string, "valLoss:"+str(best_val_loss)[:8] ]) + ".pth"
+def save_model(
+    model_save_path, model_type, trianing_result, best_val_loss, model, classes
+):
+    current_time = datetime.datetime.now()
+    time_string = current_time.strftime("%Y-%m-%d_%H-%M")
 
-  model_file_path = os.path.join(model_save_path, model_filename)
-  torch.save(model, model_file_path)
+    # generate model weight's file name and save
+    model_filename = (
+        "_".join([model_type, time_string, "valLoss:" + str(best_val_loss)[:8]])
+        + ".pth"
+    )
 
-  #save the result of the train process
-  #as well as classes that keeps track of class index mapping
-  json_content = {}
-  json_content["classes"] = classes
-  json_content["trianing_process"] = trianing_result
+    model_file_path = os.path.join(model_save_path, model_filename)
+    torch.save(model, model_file_path)
 
-  json_filename = "_".join([model_type, time_string]) + ".json"
-  json_file_path = os.path.join(model_save_path, json_filename)
-  with open(json_file_path, 'w') as json_file:
-    json.dump(json_content, json_file)
+    # save the result of the train process
+    # as well as classes that keeps track of class index mapping
+    json_content = {}
+    json_content["classes"] = classes
+    json_content["trianing_process"] = trianing_result
 
+    json_filename = "_".join([model_type, time_string]) + ".json"
+    json_file_path = os.path.join(model_save_path, json_filename)
+    with open(json_file_path, "w") as json_file:
+        json.dump(json_content, json_file)

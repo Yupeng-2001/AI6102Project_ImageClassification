@@ -5,3 +5,6 @@
 *.pt
 
 *.pyc
+*.json
+*.pth
+*.csv

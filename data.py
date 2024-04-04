@@ -8,40 +8,7 @@ from torchvision.datasets import ImageFolder
 from typing import Callable
 
 from torchvision import transforms
-
-# mean and variance for aspect ratio preserved resize only dataset
-mean_tr = [0.9414, 0.9414, 0.9414]
-std_tr = [0.1496, 0.1496, 0.1496]
-# default_transform = transforms.Compose(
-#     [
-#         transforms.RandomResizedCrop(224, scale=(0.3, 1)),
-#         transforms.RandomHorizontalFlip(),
-#         transforms.RandomRotation(degrees=15),
-#         transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-#         transforms.ToTensor(),
-#         transforms.Normalize(mean=mean_tr, std=std_tr),
-#     ]
-# )
-default_transform = transforms.Compose(
-    [
-        transforms.RandomResizedCrop(224, scale=(0.3, 1)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
-        transforms.RandomRotation(degrees=15),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=mean_tr, std=std_tr),
-    ]
-)
-
-canny_transform = transforms.Compose(
-    [
-        transforms.RandomResizedCrop(224, scale=(0.3, 1)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
-        transforms.RandomRotation(degrees=15),
-        transforms.ToTensor(),
-    ]
-)
+from constants import *
 
 
 def resize_keep_aspect_ratio(
