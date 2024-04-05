@@ -43,6 +43,7 @@ def train_model(
         model.train()
         running_loss = 0.0
         correct = 0
+        # total = 1
         total = 0
         for images, labels in train_loader:
             images, labels = images.to(device), labels.to(device)
@@ -67,7 +68,12 @@ def train_model(
         # calculate loss and accuracy
         train_loss = running_loss / len(train_loader.dataset)
         train_acc = correct / total
+        print(f"Epoch : {epoch} \t-----------------")
+        print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
+        print(f"\tcurrent LR: {scheduler.get_last_lr()[0]}")
         val_loss, val_acc = evaluate_model(model, val_loader, criterion, device)
+        # val_loss = 5
+        # val_acc = 0.5
 
         epoch_result = {}
         epoch_result["Epoch"] = epoch
@@ -83,18 +89,19 @@ def train_model(
             )
             best_valid_loss = val_loss
             best_model_params = copy.deepcopy(model.state_dict())
-            save_model(
-                model_save_path,
-                model_type,
-                training_result,
-                best_valid_loss,
-                model,
-                train_loader.dataset.classes,
+            # save_model(
+            #     model_save_path,
+            #     model_type,
+            #     training_result,
+            #     best_valid_loss,
+            #     model,
+            #     train_loader.dataset.classes,
+            # )
+            os.makedirs(model_save_path, exist_ok=True)
+            torch.save(
+                model.state_dict(),
+                os.path.join(model_save_path, f"model_ep{epoch}.pt"),
             )
-
-        print(f"Epoch : {epoch}")
-        print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
-        print(f"\tcurrent LR: {scheduler.get_last_lr()[0]}")
 
     return training_result, (best_valid_loss, best_model_params)
 

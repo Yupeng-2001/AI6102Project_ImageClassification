@@ -14,8 +14,8 @@ from torch.utils.data import Subset, random_split
 from torch.utils.data import DataLoader
 import torch.optim.lr_scheduler as lr_scheduler
 
-if __name__ == "__main__":
 
+def parse_args():
     parser = argparse.ArgumentParser(description="Unzip a file.")
 
     # Add arguments
@@ -52,9 +52,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        choices=["resnet50", "ViT"],
-        default="resnet50",
-        help="not implemented",
+        default="resnet101",
+        help="model type, specify exact model type here",
     )
     parser.add_argument(
         "--freeze_backbone",
@@ -68,8 +67,14 @@ if __name__ == "__main__":
         "--model_save_path", type=str, help="Path to save the model's weight"
     )
 
-    # Parse arguments
+    parser.add_argument("--pretrained_weight", type=str, default=None)
     args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    # Parse arguments
+    args = parse_args()
 
     batch_size = args.batch_size
     epochs = args.epochs
@@ -123,15 +128,20 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = None
-    if model_type == "resnet50":
+    if "resnet" in model_type:
         model = ResNetClassifier(
-            num_classes=num_classes, freeze_backbone=freeze_backbone
+            num_classes=num_classes,
+            freeze_backbone=freeze_backbone,
+            model_type=model_type,
+            pretrained_weight=args.pretrained_weight,
         )
     else:
         model = ViTClassifier(num_classes=num_classes, freeze_backbone=freeze_backbone)
     print(
         f"trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}"
     )
+    print(f"type of model: {type(model)} from model type {model_type}")
+
     criterion = nn.CrossEntropyLoss()
 
     optimizer = None
