@@ -5,6 +5,8 @@ from torchvision.models import (
     ViT_B_32_Weights,
     ResNet101_Weights,
     ResNet152_Weights,
+    swin_b,
+    Swin_B_Weights
 )
 import torch.nn as nn
 import torch.nn.functional as F
@@ -110,5 +112,37 @@ class ViTClassifier(nn.Module):
 
     def forward(self, x):
         x = self.vit(x)
+        x = self.fc(x)
+        return x
+
+
+class SwinTransformerClassifier(nn.Module):
+    def __init__(self, num_classes, freeze_backbone=False):
+        super(SwinTransformerClassifier, self).__init__()
+        self.backbone = swin_b(
+            weights=Swin_B_Weights.IMAGENET1K_V1
+            )
+        num_ftrs = self.backbone.head.in_features
+
+        self.backbone.head = nn.Identity()
+
+        if freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+
+        embedding1 = 512
+        embedding2 = 256
+        self.fc = nn.Sequential(
+            nn.Linear(num_ftrs, embedding1),
+            nn.BatchNorm1d(embedding1),
+            nn.GELU(),
+            nn.Linear(embedding1, embedding2),
+            nn.BatchNorm1d(embedding2),
+            nn.GELU(),
+            nn.Linear(embedding2, num_classes),
+        )
+
+    def forward(self, x):
+        x = self.backbone(x)
         x = self.fc(x)
         return x

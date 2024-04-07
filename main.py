@@ -1,7 +1,7 @@
 import argparse
 
 from data import get_dataloader, default_transform, canny_transform
-from model import ResNetClassifier, ViTClassifier
+from model import ResNetClassifier, ViTClassifier, SwinTransformerClassifier
 from utils import reset_seeds, save_model
 from train import train_model
 
@@ -135,6 +135,10 @@ if __name__ == "__main__":
             model_type=model_type,
             pretrained_weight=args.pretrained_weight,
         )
+    elif model_type == "ViT":
+        model = ViTClassifier(num_classes=num_classes, freeze_backbone=freeze_backbone)
+    elif model_type == "SwinTransformer":
+        model = SwinTransformerClassifier(num_classes=num_classes, freeze_backbone=freeze_backbone)
     else:
         model = ViTClassifier(num_classes=num_classes, freeze_backbone=freeze_backbone)
     print(
