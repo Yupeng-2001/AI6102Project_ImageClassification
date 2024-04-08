@@ -53,24 +53,47 @@ def apply_canny(
     return edges
 
 
+class AEImageDataset(Dataset):
+    def __init__(self, root_dir, transform):
+        self.root_dir = root_dir
+        self.transform = transform
+        self.image_files = os.listdir(root_dir)
+
+    def __len__(self):
+        return len(self.image_files)
+
+    def __getitem__(self, idx):
+        img_name = os.path.join(self.root_dir, self.image_files[idx])
+        image = Image.open(img_name).convert(
+            "RGB"
+        )  # Ensure all images are converted to RGB format
+        image = self.transform(image)
+        return image, image.clone()  # for ae training image is label
+
+
 def get_dataset(
     root: str,
+    mode: str = "default",
     transform: Callable | None = default_transform,
     target_transform: Callable | None = None,
 ):
-    ret = ImageFolder(root, transform, target_transform)
+    if "ae" in mode:
+        ret = AEImageDataset(root, transform)
+    else:
+        ret = ImageFolder(root, transform, target_transform)
     return ret
 
 
 def get_dataloader(
     root: str,
     batch_size: int,
+    mode: str = "default",
     shuffle: bool = True,
     transform: Callable | None = default_transform,
     target_transform: Callable | None = None,
     *args,
     **kwargs
 ):
-    dataset = get_dataset(root, transform, target_transform)
+    dataset = get_dataset(root, mode, transform, target_transform)
     dl = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, *args, **kwargs)
     return dl
