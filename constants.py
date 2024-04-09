@@ -7,10 +7,9 @@ mean_tr = [0.9414, 0.9414, 0.9414]
 std_tr = [0.1496, 0.1496, 0.1496]
 
 image_size_width_mean = 73.0799309815951
-image_size_width_var = 66.66404141104294
-image_size_height_mean = 2390.739155516708
+image_size_height_mean = 66.66404141104294
+image_size_width_var = 2390.739155516708
 image_size_height_var = 1827.9280750780397
-
 
 default_transform = transforms.Compose(
     [
