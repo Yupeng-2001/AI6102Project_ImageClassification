@@ -6,7 +6,7 @@ from torchvision.models import (
     ResNet101_Weights,
     ResNet152_Weights,
     swin_b,
-    Swin_B_Weights
+    Swin_B_Weights,
 )
 import torch.nn as nn
 import torch.nn.functional as F
@@ -61,7 +61,8 @@ class ResNetClassifier(nn.Module):
             for param in self.resnet.parameters():
                 param.requires_grad = False
         else:
-            self.resnet.apply(init_backbone_kaiming)
+            if pretrained_weight is None:
+                self.resnet.apply(init_backbone_kaiming)
 
         # Replace the final fully connected layer with a new one
         num_ftrs = self.resnet.fc.out_features
@@ -119,9 +120,7 @@ class ViTClassifier(nn.Module):
 class SwinTransformerClassifier(nn.Module):
     def __init__(self, num_classes, freeze_backbone=False):
         super(SwinTransformerClassifier, self).__init__()
-        self.backbone = swin_b(
-            weights=Swin_B_Weights.IMAGENET1K_V1
-            )
+        self.backbone = swin_b(weights=Swin_B_Weights.IMAGENET1K_V1)
         num_ftrs = self.backbone.head.in_features
 
         self.backbone.head = nn.Identity()

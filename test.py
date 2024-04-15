@@ -1,7 +1,5 @@
-from data import *
-from preprocess import *
+from constants import *
 
-preprocess_canny(
-    f"/mnt/slurm_home/pzzhao/acad_projects/AI6102_proj/dataset/train",
-    f"/mnt/slurm_home/pzzhao/acad_projects/AI6102_proj/train_canny",
-)
+i = Image.open("92180.jpg")
+i = pad_to_square(i)
+i.save("92180_pad.jpg")

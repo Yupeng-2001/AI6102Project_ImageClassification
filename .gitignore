@@ -8,3 +8,5 @@
 *.json
 *.pth
 *.csv
+test*.py
+shiyishi*

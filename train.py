@@ -12,6 +12,7 @@ Original file is located at
 parse parameters
 """
 
+import datetime
 import numpy as np
 import torch
 import copy
@@ -39,6 +40,7 @@ def train_model(
     best_model_params = copy.deepcopy(model.state_dict())
     best_valid_loss = 999999
     for epoch in range(num_epochs):
+        cur_start = datetime.datetime.now()
         # Training phase
         model.train()
         running_loss = 0.0
@@ -55,11 +57,13 @@ def train_model(
             loss.backward()
             optimizer.step()
 
-            # saving loss and acc
             running_loss += loss.item() * images.size(0)
-            _, predicted = torch.max(outputs, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            if "ae" not in model_type:
+                # saving loss and acc
+                _, predicted = torch.max(outputs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+            pass
 
         # update scheduler if not None
         if scheduler:
@@ -67,19 +71,25 @@ def train_model(
 
         # calculate loss and accuracy
         train_loss = running_loss / len(train_loader.dataset)
-        train_acc = correct / total
+        if "ae" not in model_type:
+            train_acc = correct / total
+        else:
+            train_acc = 0
         print(f"Epoch : {epoch} \t-----------------")
+        print(f"training time: {datetime.datetime.now() - cur_start}")
         print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
         print(f"\tcurrent LR: {scheduler.get_last_lr()[0]}")
-        val_loss, val_acc = evaluate_model(model, val_loader, criterion, device)
+        val_loss, val_acc = evaluate_model(
+            model, model_type, val_loader, criterion, device
+        )
         # val_loss = 5
         # val_acc = 0.5
 
         epoch_result = {}
         epoch_result["Epoch"] = epoch
         epoch_result["Train Loss"] = train_loss
-        epoch_result["Val Loss"] = val_loss
         epoch_result["Train Acc"] = train_acc
+        epoch_result["Val Loss"] = val_loss
         epoch_result["Val Acc"] = val_acc
         training_result.append(epoch_result)
 
@@ -106,7 +116,7 @@ def train_model(
     return training_result, (best_valid_loss, best_model_params)
 
 
-def evaluate_model(model, val_loader, criterion, device="cuda"):
+def evaluate_model(model, model_type: str, val_loader, criterion, device="cuda"):
     model.eval()
     val_loss = 0.0
     correct = 0
@@ -117,12 +127,16 @@ def evaluate_model(model, val_loader, criterion, device="cuda"):
             outputs = model(images)
             loss = criterion(outputs, labels)
             val_loss += loss.item() * images.size(0)
-            _, predicted = torch.max(outputs, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            if "ae" not in model_type:
+                _, predicted = torch.max(outputs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
 
     val_loss = val_loss / len(val_loader.dataset)
-    val_acc = correct / total
+    if "ae" not in model_type:
+        val_acc = correct / total
+    else:
+        val_acc = 0
 
     print(f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
     return val_loss, val_acc
